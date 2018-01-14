@@ -96,11 +96,13 @@ static const uint32_t dec_PGM[12] = {
 int
 main()
 {
+	int was_there_a_note = 0;
 	for (;;) {
 		const int first = getchar();
 		if (first == EOF) break;
 		if (first < 0x80) {
 			flushnotes();
+			if (!was_there_a_note) continue;
 			delay_ms += first * 256 + getchar();
 			continue;
 		}
@@ -115,10 +117,12 @@ main()
 			const uint8_t n2 = note - 4;
 //			fprintf(stderr, "note %d (%d/%2d) dec %d / %d (%d/%2d)\n", note, note / 12, note % 12, decrement_PGM[note], dec_PGM[n2 % 12] >> (9 - n2 / 12), 9 - n2 / 12, n2 % 12);
 			notes_to_play[chan] = ((9 - n2 / 12) << 4) | (n2 % 12);
+			was_there_a_note = !0;
 			break;
 		case CMD_STOPNOTE:
 			assert(chan < 4);
 			notemask_to_stop |= 1 << chan;
+			was_there_a_note = !0;
 			break;
 		case CMD_RESTART:
 			put(0xa0);
